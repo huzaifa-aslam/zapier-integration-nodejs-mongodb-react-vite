@@ -23,8 +23,8 @@ module.exports = {
     const redirectParam = encodeURIComponent(JSON.stringify(req.query || {}));
 
     const frontendApproveUrl = buildUrl(
-      // change this to your frontend approve URL
-      `http://localhost:5173/zapier/authorize`,
+      process.env.FRONTEND_APPROVE_URL ||
+        "http://localhost:5173/zapier/authorize",
       {
         redirect: redirectParam,
       },

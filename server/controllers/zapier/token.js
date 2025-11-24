@@ -2,6 +2,7 @@
 
 const crypto = require("crypto");
 const ZapierAuthIntegration = require("../../modals/ZapierAuthIntegration");
+
 const clients = [
   {
     client_id: process.env.ZAPIER_CLIENT_ID,
@@ -23,7 +24,12 @@ module.exports = {
 
       const client = getClient(client_id);
       if (!client || client.client_secret !== client_secret) {
-        return res.status(401).json({ error: "INVALID_CLIENT" });
+        return res.status(401).json({
+          message: "Invalid client credentials",
+          status: 401,
+          error: true,
+          data: {},
+        });
       }
 
       if (grant_type === "authorization_code") {
@@ -33,7 +39,12 @@ module.exports = {
         });
 
         if (!integration) {
-          return res.status(400).json({ error: "INVALID_GRANT" });
+          return res.status(400).json({
+            message: "Invalid authorization code",
+            status: 400,
+            error: true,
+            data: {},
+          });
         }
 
         const accessToken = generateToken(24);
@@ -45,6 +56,7 @@ module.exports = {
         integration.status = "active";
         await integration.save();
 
+        // ✅ Success response (keep original format)
         return res.status(200).json({
           access_token: accessToken,
           refresh_token: refreshToken,
@@ -60,13 +72,19 @@ module.exports = {
         });
 
         if (!integration) {
-          return res.status(400).json({ error: "INVALID_GRANT" });
+          return res.status(400).json({
+            message: "Invalid refresh token",
+            status: 400,
+            error: true,
+            data: {},
+          });
         }
 
         const newAccessToken = generateToken(24);
         integration.accessToken = newAccessToken;
         await integration.save();
 
+        // ✅ Success response (keep original format)
         return res.status(200).json({
           access_token: newAccessToken,
           refresh_token,
@@ -74,12 +92,20 @@ module.exports = {
         });
       }
 
-      return res.status(400).json({ error: "UNSUPPORTED_GRANT_TYPE" });
+      return res.status(400).json({
+        message: "Unsupported grant type",
+        status: 400,
+        error: true,
+        data: {},
+      });
     } catch (err) {
       console.error("Token error:", err);
-      return res
-        .status(500)
-        .json({ error: "INTERNAL_SERVER_ERROR", details: err.message });
+      return res.status(500).json({
+        message: "Internal server error",
+        status: 500,
+        error: true,
+        data: { details: err.message },
+      });
     }
   },
 };

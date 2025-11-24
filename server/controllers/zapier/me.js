@@ -19,7 +19,12 @@ module.exports = {
       }
 
       if (!inToken) {
-        return res.status(401).json({ error: "MISSING_TOKEN" });
+        return res.status(401).json({
+          message: "Access token is missing",
+          status: 401,
+          error: true,
+          data: {},
+        });
       }
 
       // ✅ Find integration by accessToken + active status
@@ -29,37 +34,61 @@ module.exports = {
       });
 
       if (!tokenDoc) {
-        return res.status(401).json({ error: "INVALID_TOKEN" });
+        return res.status(401).json({
+          message: "Invalid access token",
+          status: 401,
+          error: true,
+          data: {},
+        });
       }
 
       req.integration = tokenDoc;
       next();
     } catch (err) {
       console.error("getAccessToken error:", err);
-      return res
-        .status(500)
-        .json({ error: "INTERNAL_SERVER_ERROR", details: err.message });
+      return res.status(500).json({
+        message: "Internal server error",
+        status: 500,
+        error: true,
+        data: { details: err.message },
+      });
     }
   },
 
   // ✅ Middleware to ensure token is present
   requireAccessToken: function (req, res, next) {
     if (req.integration) return next();
-    return res.status(401).json({ error: "MISSING_TOKEN" });
+    return res.status(401).json({
+      message: "Access token is missing",
+      status: 401,
+      error: true,
+      data: {},
+    });
   },
 
   // ✅ Return connected user info
   userInfo: async function (req, res) {
     try {
       if (!req.integration || !req.integration.email) {
-        return res.status(404).json({ error: "USER_NOT_FOUND" });
+        return res.status(404).json({
+          message: "User not found",
+          status: 404,
+          error: true,
+          data: {},
+        });
       }
 
       const user = await User.findOne({ email: req.integration.email });
       if (!user) {
-        return res.status(404).json({ error: "USER_NOT_FOUND" });
+        return res.status(404).json({
+          message: "User not found",
+          status: 404,
+          error: true,
+          data: {},
+        });
       }
 
+      // ✅ Success response (keep original format)
       const out = {
         _id: user._id.toString(),
         email: user.email,
@@ -70,9 +99,12 @@ module.exports = {
       return res.status(200).json(out);
     } catch (err) {
       console.error("userInfo error:", err);
-      return res
-        .status(500)
-        .json({ error: "INTERNAL_SERVER_ERROR", details: err.message });
+      return res.status(500).json({
+        message: "Internal server error",
+        status: 500,
+        error: true,
+        data: { details: err.message },
+      });
     }
   },
 };

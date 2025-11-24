@@ -7,29 +7,34 @@ module.exports = {
   approve: async function (req, res) {
     try {
       const query = req.body;
-      // 🔎 Extract email from request
+
+      // 🔎 Extract email
       const email = req.body.email;
       if (!email) {
         return res.status(400).json({
           message: "Email is required",
-          success: false,
+          status: 400,
           error: true,
           data: {},
         });
       }
 
-      // ✅ Fetch user by email
+      // 🔎 Lookup user
       const user = await User.findOne({ email: email.toLowerCase().trim() });
 
       if (!user) {
-        return res.status(400).json({ error: "USER_NOT_FOUND" });
+        return res.status(400).json({
+          message: "User not found",
+          status: 400,
+          error: true,
+          data: {},
+        });
       }
 
-      // ✅ If user approved Zapier connection
+      // 🔐 If user approves
       if (req.body.approve) {
         const code = crypto.randomBytes(16).toString("hex");
 
-        // Create or update ZapierAuthIntegration
         await ZapierAuthIntegration.findOneAndUpdate(
           { email: user.email },
           {
@@ -40,6 +45,7 @@ module.exports = {
           { upsert: true, new: true },
         );
 
+        // ✅ Success response (keep original format)
         return res.json({
           redirect_uri: query.redirect_uri,
           code,
@@ -47,16 +53,23 @@ module.exports = {
         });
       }
 
-      // ❌ If user denied access
+      // ❌ User denied access
       return res.status(400).json({
-        error: "ACCESS_DENIED",
-        redirect_uri: query.redirect_uri,
+        message: "Access denied",
+        status: 400,
+        error: true,
+        data: {
+          redirect_uri: query.redirect_uri,
+        },
       });
     } catch (err) {
       console.error("Approve error:", err);
+
       return res.status(500).json({
-        error: "INTERNAL_SERVER_ERROR",
-        details: err.message,
+        message: "Internal server error",
+        status: 500,
+        error: true,
+        data: { details: err.message },
       });
     }
   },

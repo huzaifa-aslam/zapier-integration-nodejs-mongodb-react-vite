@@ -1,12 +1,13 @@
 import { useState } from "react";
 
+const BACKEND_URL = "http://localhost:5000"; // backend base URL
+
 function App() {
   const [loading, setLoading] = useState(false);
 
   const handleApprove = async () => {
     setLoading(true);
     try {
-      debugger;
       const searchParams = new URLSearchParams(window.location.search);
       const redirectParam = searchParams.get("redirect");
 
@@ -21,19 +22,25 @@ function App() {
 
       const bodyData = {
         ...parsedParams,
-        email: "john.doe@example.com",
+        email: "john.doe@example.com", // replace with dynamic email if needed
         approve: true,
       };
 
-      const response = await fetch("http://localhost:5000/api/zapier/approve", {
+      const response = await fetch(`${BACKEND_URL}/api/zapier/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bodyData),
       });
 
-      if (!response.ok) throw new Error("Network response was not ok");
-
       const data = await response.json();
+
+      if (!response.ok) {
+        // Show backend message in alert
+        const errorMessage =
+          data?.message || data?.error || "Something went wrong";
+        throw new Error(errorMessage);
+      }
+
       const { redirect_uri, code, state } = data;
 
       if (redirect_uri) {
@@ -44,7 +51,7 @@ function App() {
       }
     } catch (err) {
       console.error("Approval failed:", err);
-      alert("Something went wrong while approving.");
+      alert(err.message); // show backend-provided error
     } finally {
       setLoading(false);
     }
