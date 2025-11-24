@@ -1,9 +1,13 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const PORT = process.env.PORT || 5000;
+
+// 👉 Import Mongo initializer
+const initMongo = require("./config/db");
 
 const app = express();
-app.set("trust proxy", true); // for Cloudflare or reverse proxies
+app.set("trust proxy", true);
 
 // Middleware
 app.use(express.json({ limit: "20mb" }));
@@ -24,16 +28,19 @@ app.use("/api/zapier", require("./routes/zapier"));
 // Root route
 app.get("/", (_req, res) => {
   res.status(200).send(`
-    <html><head><title>Server Status</title></head>
-    <body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;">
-      <div>
-        <h1>🚀 Server Running</h1>
-        <p>Status: <strong>Online</strong></p>
-      </div>
-    </body></html>
+   Server Running
   `);
 });
 
-// Start server
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+// 👉 Connect to MongoDB first, then start server
+(async () => {
+  try {
+    await initMongo();
+    console.log("MongoDB initialized ✔");
+
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  } catch (err) {
+    console.error("❌ Failed to initialize app:", err.message);
+    process.exit(1);
+  }
+})();

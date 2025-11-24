@@ -1,8 +1,6 @@
 // modals/user.js
 
-
 const mongoose = require("mongoose");
-const validator = require("validator");
 
 const userSchema = new mongoose.Schema(
   {
@@ -23,7 +21,6 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       lowercase: true,
-      validate: [validator.isEmail, "Please enter a valid email"],
     },
   },
   {

@@ -1,7 +1,7 @@
 // controllers/zapier/me.js
 
-const ZapierAuthIntegration = require("../../models/zapier/zapierAuthIntegration");
-const User = require("../../models/user");
+const ZapierAuthIntegration = require("../../modals/ZapierAuthIntegration");
+const User = require("../../modals/user");
 
 module.exports = {
   // ✅ Middleware to verify access token

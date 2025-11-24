@@ -1,8 +1,7 @@
 // controllers/zapier/token.js
 
 const crypto = require("crypto");
-const ZapierAuthIntegration = require("../../models/zapier/zapierAuthIntegration");
-
+const ZapierAuthIntegration = require("../../modals/ZapierAuthIntegration");
 const clients = [
   {
     client_id: process.env.ZAPIER_CLIENT_ID,

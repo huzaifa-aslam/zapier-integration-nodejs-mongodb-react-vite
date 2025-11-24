@@ -1,24 +1,35 @@
 // controllers/zapier/approve.js
 const crypto = require("crypto");
-const ZapierAuthIntegration = require("../../models/zapier/zapierAuthIntegration");
-const User = require("../../models/user");
+const ZapierAuthIntegration = require("../../modals/ZapierAuthIntegration");
+const User = require("../../modals/user");
 
 module.exports = {
   approve: async function (req, res) {
     try {
-      // ✅ Fetch the user from DB
-      const user = await User.findById(req._id);
+      const query = req.body;
+      // 🔎 Extract email from request
+      const email = req.body.email;
+      if (!email) {
+        return res.status(400).json({
+          message: "Email is required",
+          success: false,
+          error: true,
+          data: {},
+        });
+      }
+
+      // ✅ Fetch user by email
+      const user = await User.findOne({ email: email.toLowerCase().trim() });
+
       if (!user) {
         return res.status(400).json({ error: "USER_NOT_FOUND" });
       }
-
-      const query = req.body;
 
       // ✅ If user approved Zapier connection
       if (req.body.approve) {
         const code = crypto.randomBytes(16).toString("hex");
 
-        // ✅ Create or update ZapierAuthIntegration by email
+        // Create or update ZapierAuthIntegration
         await ZapierAuthIntegration.findOneAndUpdate(
           { email: user.email },
           {
@@ -29,19 +40,18 @@ module.exports = {
           { upsert: true, new: true },
         );
 
-        // ✅ Return success response
         return res.json({
           redirect_uri: query.redirect_uri,
           code,
           state: query.state,
         });
-      } else {
-        // ❌ If user denied access
-        return res.status(400).json({
-          error: "ACCESS_DENIED",
-          redirect_uri: query.redirect_uri,
-        });
       }
+
+      // ❌ If user denied access
+      return res.status(400).json({
+        error: "ACCESS_DENIED",
+        redirect_uri: query.redirect_uri,
+      });
     } catch (err) {
       console.error("Approve error:", err);
       return res.status(500).json({
