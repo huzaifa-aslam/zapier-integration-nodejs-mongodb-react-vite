@@ -1,4 +1,4 @@
-// config/mongo.js
+// config/db.js
 const mongoose = require("mongoose");
 
 module.exports = async function initMongo() {
