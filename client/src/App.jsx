@@ -4,7 +4,8 @@ const BACKEND_URL = "http://localhost:5000"; // backend base URL
 
 function App() {
   const [loading, setLoading] = useState(false);
-
+  // replace with your email or use dynamic
+  const userEmail = "john.doe@example.com";
   const handleApprove = async () => {
     setLoading(true);
     try {
@@ -22,7 +23,7 @@ function App() {
 
       const bodyData = {
         ...parsedParams,
-        email: "john.doe@example.com", // replace with dynamic email if needed
+        email: userEmail, // replace with dynamic email if needed
         approve: true,
       };
 
