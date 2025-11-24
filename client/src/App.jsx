@@ -6,6 +6,7 @@ function App() {
   const handleApprove = async () => {
     setLoading(true);
     try {
+      debugger;
       const searchParams = new URLSearchParams(window.location.search);
       const redirectParam = searchParams.get("redirect");
 
@@ -20,10 +21,11 @@ function App() {
 
       const bodyData = {
         ...parsedParams,
+        email: "john.doe@example.com",
         approve: true,
       };
 
-      const response = await fetch("http://localhost:8080/api/zapier/approve", {
+      const response = await fetch("http://localhost:5000/api/zapier/approve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bodyData),
